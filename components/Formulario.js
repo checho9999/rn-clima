@@ -1,11 +1,39 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableWithoutFeedback, Animated } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableWithoutFeedback, Animated, Alert } from 'react-native';
 import { Picker } from '@react-native-community/picker';
 
-const Formulario = () => {
+const Formulario = ( { busqueda, guardarBusqueda, guardarConsultar } ) => {
+
+    //Extrayendo ciudad y pais desde el useState de la app principal
+    const { pais, ciudad } = busqueda;
 
     //Definimos el state para la animacion...el Value(1) es el valor inicial de la escala
     const [animacionboton ] = useState (new Animated.Value(1));
+
+    //Habilitamos o no la busqueda en base a los datos ingresados por el usuario
+    const consultarClima = () => {
+        //Validamos que los datos ingresados por el usuario sean correctos  
+        if (pais.trim() === '' || ciudad.trim() === ''){
+            mostrarAlerta();
+            return;
+        }
+
+        //Actualizamos el state para habilitar la busqueda
+        guardarConsultar(true);
+    
+     }
+
+   //Mostramos una alerta para el caso de los datos ingresados por el usuario no sean validos
+   const mostrarAlerta = () => {
+        Alert.alert(
+            'Error...',
+            'Agrega un pais y una ciudad para la busqueda',
+            [
+                { text: 'Entendido' }
+            ]
+        )
+
+    }
 
     //Animacion que se ejecuta al presionar el boton de busqueda
     const animacionEntrada = () => {
@@ -36,12 +64,17 @@ const Formulario = () => {
         <View>
             <View style={styles.formulario}> 
                 <TextInput style={styles.input}
+                    value={ciudad}
+                    onChangeText={ ciudad => guardarBusqueda( { ...busqueda, ciudad } ) }
                     placeholder='Ciudad'
                     placeholderTextColor='#666'
                 />
             </View>
             <View>
-                <Picker itemStyle={ {height: 120, backgroundColor: '#FFF'} } >
+                <Picker itemStyle={ {height: 120, backgroundColor: '#FFF'} } 
+                    selectedValue={pais}
+                    onValueChange={ pais => guardarBusqueda( { ...busqueda, pais } ) }
+                >
                     <Picker.Item label='-- Seleccione un pais --' value='' />
                     <Picker.Item label='Estados Unidos' value='US' />
                     <Picker.Item label='Mexico' value='MX' />
@@ -56,6 +89,7 @@ const Formulario = () => {
             <TouchableWithoutFeedback
                 onPressIn={ () => animacionEntrada() }
                 onPressOut={ () => animacionSalida() }
+                onPress={ () => consultarClima() }
             >
                 <Animated.View style={ [styles.btnBuscar, estiloAnimacion] } >
                     <Text style={styles.textoBuscar}>Buscar Clima</Text>
